@@ -7,8 +7,9 @@ use Doctrine\ORM\QueryBuilder;
 use LaravelDoctrine\ORM\Validation\DoctrinePresenceVerifier;
 use Mockery as m;
 use Mockery\Mock;
+use PHPUnit\Framework\TestCase;
 
-class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
+class DoctrinePresenceVerifierTest extends TestCase
 {
     /**
      * @var Mock
@@ -52,6 +53,8 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
         $this->defaultGetCountMocks();
 
         $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com');
+
+        $this->assertTrue(true);
     }
 
     public function test_can_get_count_with_excluded_ids()
@@ -64,6 +67,8 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
         $this->query->shouldReceive('setParameter')->once()->with('id', 1);
 
         $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com', 1);
+
+        $this->assertTrue(true);
     }
 
     public function test_can_get_count_with_excluded_ids_with_custom_id_column()
@@ -76,6 +81,8 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
         $this->query->shouldReceive('setParameter')->once()->with('new_id', 1);
 
         $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com', 1, 'new_id');
+
+        $this->assertTrue(true);
     }
 
     public function test_can_get_count_with_extra_conditions()
@@ -88,13 +95,70 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
         $this->builder->shouldReceive('andWhere')
                       ->once()->with('e.condition2 = :condition2');
 
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition3 != :condition3');
+
+        $this->builder->shouldReceive('setParameter')->once()->with('condition1', 'value1');
+        $this->builder->shouldReceive('setParameter')->once()->with('condition2', 'value2');
+        $this->builder->shouldReceive('setParameter')->once()->with('condition3', 'value3');
+
+        $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com', null, null, [
+            'condition1' => 'value1',
+            'condition2' => 'value2',
+            'condition3' => '!value3'
+        ]);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_can_get_count_with_extra_conditions_with_null()
+    {
+        $this->defaultGetCountMocks();
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition1 = :condition1');
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition2 = :condition2');
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition3 IS NULL');
+
         $this->builder->shouldReceive('setParameter')->once()->with('condition1', 'value1');
         $this->builder->shouldReceive('setParameter')->once()->with('condition2', 'value2');
 
         $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com', null, null, [
             'condition1' => 'value1',
-            'condition2' => 'value2'
+            'condition2' => 'value2',
+            'condition3' => 'NULL'
         ]);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_can_get_count_with_extra_conditions_with_not_null()
+    {
+        $this->defaultGetCountMocks();
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition1 = :condition1');
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition2 = :condition2');
+
+        $this->builder->shouldReceive('andWhere')
+                      ->once()->with('e.condition3 IS NOT NULL');
+
+        $this->builder->shouldReceive('setParameter')->once()->with('condition1', 'value1');
+        $this->builder->shouldReceive('setParameter')->once()->with('condition2', 'value2');
+
+        $this->verifier->getCount(CountableEntityMock::class, 'email', 'test@email.com', null, null, [
+            'condition1' => 'value1',
+            'condition2' => 'value2',
+            'condition3' => 'NOT_NULL'
+        ]);
+
+        $this->assertTrue(true);
     }
 
     public function test_can_get_multi_count()
@@ -102,6 +166,8 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
         $this->defaultGetMultiCountMocks();
 
         $this->verifier->getMultiCount(CountableEntityMock::class, 'email', ['test@email.com']);
+
+        $this->assertTrue(true);
     }
 
     public function test_can_get_multi_count_with_extra_conditions()
@@ -121,6 +187,8 @@ class DoctrinePresenceVerifierTest extends PHPUnit_Framework_TestCase
             'condition1' => 'value1',
             'condition2' => 'value2'
         ]);
+
+        $this->assertTrue(true);
     }
 
     public function test_counting_invalid_entity_throws_exception()

@@ -1,7 +1,8 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 
-abstract class AbstractCacheProviderTest extends PHPUnit_Framework_TestCase
+abstract class AbstractCacheProviderTest extends TestCase
 {
     abstract public function getProvider();
 

@@ -8,8 +8,9 @@ use LaravelDoctrine\ORM\EntityManagerFactory;
 use LaravelDoctrine\ORM\IlluminateRegistry;
 use Mockery as m;
 use Mockery\Mock;
+use PHPUnit\Framework\TestCase;
 
-class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
+class IlluminateRegistryTest extends TestCase
 {
     /**
      * @var Mock
@@ -106,10 +107,8 @@ class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
 
     public function test_cannot_non_existing_connection()
     {
-        $this->setExpectedException(
-            InvalidArgumentException::class,
-            'Doctrine Connection named "non-existing" does not exist.'
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Doctrine Connection named "non-existing" does not exist.');
 
         $this->registry->getConnection('non-existing');
     }
@@ -202,10 +201,8 @@ class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
 
     public function test_cannot_non_existing_manager()
     {
-        $this->setExpectedException(
-            InvalidArgumentException::class,
-            'Doctrine Manager named "non-existing" does not exist.'
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Doctrine Manager named "non-existing" does not exist.');
 
         $this->registry->getManager('non-existing');
     }
@@ -271,6 +268,20 @@ class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
         $this->assertContains('manager2', $managers);
     }
 
+    public function test_can_purge_default_manager()
+    {
+        $this->container->shouldReceive('singleton');
+        $this->registry->addManager('default');
+
+        $this->container->shouldReceive('forgetInstance', 'doctrine.managers.default');
+        $this->container->shouldReceive('make')
+            ->with('doctrine.managers.default')
+            ->andReturn(m::mock(\Doctrine\Common\Persistence\ObjectManager::class));
+
+        $this->registry->purgeManager();
+        $this->assertFalse($this->registry->managerExists('default'));
+    }
+
     public function test_can_reset_default_manager()
     {
         $this->container->shouldReceive('singleton');
@@ -285,6 +296,20 @@ class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(\Doctrine\Common\Persistence\ObjectManager::class, $manager);
         $this->assertSame($manager, $this->registry->getManager());
+    }
+
+    public function test_can_purge_custom_manager()
+    {
+        $this->container->shouldReceive('singleton');
+        $this->registry->addManager('custom');
+
+        $this->container->shouldReceive('forgetInstance', 'doctrine.managers.custom');
+        $this->container->shouldReceive('make')
+            ->with('doctrine.managers.custom')
+            ->andReturn(m::mock(\Doctrine\Common\Persistence\ObjectManager::class));
+
+        $this->registry->purgeManager();
+        $this->assertFalse($this->registry->managerExists('custom'));
     }
 
     public function test_can_reset_custom_manager()
@@ -303,22 +328,26 @@ class IlluminateRegistryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($manager, $this->registry->getManager('custom'));
     }
 
+    public function test_cannot_purge_non_existing_managers()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Doctrine Manager named "non-existing" does not exist.');
+
+        $this->registry->purgeManager('non-existing');
+    }
+
     public function test_cannot_reset_non_existing_managers()
     {
-        $this->setExpectedException(
-            InvalidArgumentException::class,
-            'Doctrine Manager named "non-existing" does not exist.'
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Doctrine Manager named "non-existing" does not exist.');
 
         $this->registry->resetManager('non-existing');
     }
 
     public function test_get_alias_namespace_from_unknown_namespace()
     {
-        $this->setExpectedException(
-            ORMException::class,
-            'Unknown Entity namespace alias \'Alias\''
-        );
+        $this->expectException(ORMException::class);
+        $this->expectExceptionMessage('Unknown Entity namespace alias \'Alias\'');
 
         $this->registry->getAliasNamespace('Alias');
     }

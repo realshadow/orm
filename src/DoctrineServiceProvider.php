@@ -12,6 +12,7 @@ use Faker\Generator as FakerGenerator;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LaravelDoctrine\ORM\Auth\DoctrineUserProvider;
 use LaravelDoctrine\ORM\Configuration\Cache\CacheManager;
@@ -27,6 +28,7 @@ use LaravelDoctrine\ORM\Console\DumpDatabaseCommand;
 use LaravelDoctrine\ORM\Console\EnsureProductionSettingsCommand;
 use LaravelDoctrine\ORM\Console\GenerateEntitiesCommand;
 use LaravelDoctrine\ORM\Console\GenerateProxiesCommand;
+use LaravelDoctrine\ORM\Console\GenerateRepositoriesCommand;
 use LaravelDoctrine\ORM\Console\InfoCommand;
 use LaravelDoctrine\ORM\Console\MappingImportCommand;
 use LaravelDoctrine\ORM\Console\SchemaCreateCommand;
@@ -276,13 +278,13 @@ class DoctrineServiceProvider extends ServiceProvider
         $manager = $this->app->make(ExtensionManager::class);
 
         if ($manager->needsBooting()) {
-            $this->app['events']->fire('doctrine.extensions.booting');
+            $this->app['events']->dispatch('doctrine.extensions.booting');
 
             $this->app->make(ExtensionManager::class)->boot(
                 $this->app['registry']
             );
 
-            $this->app['events']->fire('doctrine.extensions.booted');
+            $this->app['events']->dispatch('doctrine.extensions.booted');
         }
     }
 
@@ -365,6 +367,7 @@ class DoctrineServiceProvider extends ServiceProvider
             ConvertConfigCommand::class,
             MappingImportCommand::class,
             GenerateEntitiesCommand::class,
+            GenerateRepositoriesCommand::class,
             ConvertMappingCommand::class,
             DumpDatabaseCommand::class
         ]);
@@ -375,7 +378,7 @@ class DoctrineServiceProvider extends ServiceProvider
      */
     protected function isLumen()
     {
-        return str_contains($this->app->version(), 'Lumen');
+        return Str::contains($this->app->version(), 'Lumen');
     }
 
     /**

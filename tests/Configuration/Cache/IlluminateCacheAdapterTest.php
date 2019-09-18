@@ -3,8 +3,9 @@
 use Illuminate\Contracts\Cache\Repository;
 use LaravelDoctrine\ORM\Configuration\Cache\IlluminateCacheAdapter;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 
-class IlluminateCacheAdapterTest extends PHPUnit_Framework_TestCase
+class IlluminateCacheAdapterTest extends TestCase
 {
     /**
      * @var IlluminateCacheAdapter
@@ -77,8 +78,8 @@ class IlluminateCacheAdapterTest extends PHPUnit_Framework_TestCase
                          ->once()->andReturn(1);
 
         $this->repository->shouldReceive('put')
-                         ->with('[1][1]', 'data', 1)
-                         ->once()->andReturn(null);
+                         ->with('[1][1]', 'data', 60)
+                         ->once()->andReturn(true);
 
         $this->assertTrue($this->cache->save(1, 'data', 60));
     }
